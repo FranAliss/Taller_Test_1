@@ -4,7 +4,9 @@ on:
   push:
     branches: [main]
   pull_request_target:
-    branches: [main, master]
+    branches: 
+      - main
+      - master
 
 jobs:
   ci_to_main:
