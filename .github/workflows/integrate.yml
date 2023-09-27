@@ -33,7 +33,7 @@ jobs:
         uses: ArtiomTr/jest-coverage-report-action@v2.2.1
         id: coverage
         with:
-            output: report-markdown
+            output: report-markdown, comment
       - uses: marocchino/sticky-pull-request-comment@v2
         with:
             message: ${{ steps.coverage.outputs.report }}
