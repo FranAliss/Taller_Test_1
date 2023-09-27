@@ -31,7 +31,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Jest coverage report
         uses: ArtiomTr/jest-coverage-report-action@v2.2.1
-          id: coverage
+        id: coverage
         with:
             output: report-markdown
       - uses: marocchino/sticky-pull-request-comment@v2
