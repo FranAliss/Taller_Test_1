@@ -22,7 +22,6 @@ jobs:
       - name: Run tests
         run: npm run test-once
       - name: Jest coverage report
-        uses: ArtiomTr/jest-coverage-report-action@v2.2.5
       - uses: ArtiomTr/jest-coverage-report-action@v2
         id: coverage
         with:
