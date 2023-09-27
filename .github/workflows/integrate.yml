@@ -30,4 +30,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Jest Coverage Comment
+        id: coverageComment
         uses: MishaKav/jest-coverage-comment@main
+        with:
+          hide-comment: true
+          coverage-summary-path: ./coverage/coverage-final.json
