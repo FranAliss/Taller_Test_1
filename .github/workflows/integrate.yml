@@ -45,43 +45,25 @@
 #       - uses: marocchino/sticky-pull-request-comment@v2
 #         with:
 #             message: ${{ steps.coverage.outputs.report }}
-            
-name: CI en todos los commits
+          
+name: CI
 
-on:
+on: 
   push:
-    branches:
-      - main
+    # only trigger on branches, not on tags
+    branches: '**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout del código fuente
-        uses: actions/checkout@v2
-
-      - name: Obtener el número de commits en el push
-        id: num_commits
-        run: |
-          num=$(git rev-list ${{ github.event.before }}..${{ github.sha }} --count)
-          echo "::set-output name=num_commits::$num"
-        shell: bash
-
-      - name: Ejecutar acciones en cada commit
-        run: |
-          num_commits=${{ steps.num_commits.outputs.num_commits }}
-
-          if [ $num_commits -gt 1 ]; then
-            commit_range="${{ github.event.before }}..${{ github.sha }}"
-          else
-            commit_range="${{ github.sha }}"
-          fi
-
-          echo "Rango de commits: $commit_range"
-
-          for commit in $(git rev-list $commit_range); do
-            echo "Commit: $commit"
+      - uses: actions/checkout@v2
+        with:
+          # checkout full tree
+          fetch-depth: 0
+      - run: |
+          for commit in $(git rev-list ${{ github.event.before}}..${{ github.sha}}); do
             - name: Checkout del código fuente
               uses: actions/checkout@v2
               with:
