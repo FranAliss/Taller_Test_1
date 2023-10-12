@@ -50,7 +50,6 @@ name: CI
 
 on:
   push:
-    # Solo activar en ramas, no en etiquetas
     branches:
       - '**'
 
@@ -66,27 +65,48 @@ jobs:
 
       - name: Procesar commits
         run: |
-          for commit in $(git rev-list ${{ github.event.before}}..${{ github.sha}}); do
+          for commit in $(git rev-list ${{ github.event.before }}..${{ github.sha }}); do
             echo "Procesando commit: $commit"
             git checkout $commit
-            
-            # Configurar Node.js, instalar dependencias, ejecutar pruebas, construir y desplegar si es necesario
-            echo "Configurar Node.js"
-            uses: actions/setup-node@v1
+
+            # Configurar Node.js
+            uses: actions/setup-node@v2
             with:
               node-version: 16
-              
-            echo "Instalar dependencias"
+
+            # Instalar dependencias
             run: npm ci
-            
-            echo "Ejecutar pruebas"
+
+            # Ejecutar pruebas
             run: npm run test-once
-            
-            echo "Construir para despliegue"
+
+            # Construir para despliegue
             run: npm run build
-            
+
+            # Comprobar si es necesario el despliegue
             if [[ "$commit" == "<condición>" ]]; then
               echo "Desplegando commit: $commit"
               # Tus pasos de despliegue aquí
             fi
+
+            # Agregar más acciones según sea necesario
+            # Por ejemplo, ejecutar análisis estático, pruebas de seguridad, notificar resultados, etc.
+
+            # Ejemplo: Ejecutar pruebas de seguridad
+            run: npm run security-test
+
+            # Ejemplo: Ejecutar análisis estático del código
+            run: npm run static-analysis
+
+            # Ejemplo: Acción de cobertura de Jest
+            uses: ArtiomTr/jest-coverage-report-action@v2.2.1
+            id: coverage
+            with:
+              output: report-markdown, comment
+
+            # Ejemplo: Acción de comentario persistente en solicitudes de extracción
+            uses: marocchino/sticky-pull-request-comment@v2
+            with:
+              message: ${{ steps.coverage.outputs.report }}
           done
+
