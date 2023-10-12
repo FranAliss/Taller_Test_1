@@ -1,4 +1,54 @@
-name: javascript-CI
+# name: javascript-CI
+
+# on:
+#   push:
+#     branches: [main]
+#   pull_request_target:
+#     branches: [main, master]
+
+# jobs:
+#   ci_to_main:
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         commit:
+#           - ${{ github.sha }}
+
+#     steps:
+#       - name: Checkout del código fuente
+#         uses: actions/checkout@v2
+#         with:
+#           ref: ${{ matrix.commit }}
+#       - name: Set up node.js
+#         uses: actions/setup-node@v1
+#         with:
+#           node-version: 16
+#       - name: Install dependencies
+#         run: npm ci
+#       - name: Run tests
+#         run: npm run test-once
+#       - name: Build for deploy
+#         run: npm run build
+#       - name: Deploy to GitHub Pages
+#         if: success()
+#         uses: crazy-max/ghaction-github-pages@v2
+#         with:
+#           target_branch: gh-pages
+#           build_dir: dist
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Jest coverage report
+#         uses: ArtiomTr/jest-coverage-report-action@v2.2.1
+#         id: coverage
+#         with:
+#             output: report-markdown, comment
+#       - uses: marocchino/sticky-pull-request-comment@v2
+#         with:
+#             message: ${{ steps.coverage.outputs.report }}
+            
+
+
+name: CI en todos los commits
 
 on:
   push:
@@ -7,42 +57,53 @@ on:
     branches: [main, master]
 
 jobs:
-  ci_to_main:
+  build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        commit:
-          - ${{ github.sha }}
 
     steps:
       - name: Checkout del código fuente
         uses: actions/checkout@v2
-        with:
-          ref: ${{ matrix.commit }}
-      - name: Set up node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16
-      - name: Install dependencies
-        run: npm ci
-      - name: Run tests
-        run: npm run test-once
-      - name: Build for deploy
-        run: npm run build
-      - name: Deploy to GitHub Pages
-        if: success()
-        uses: crazy-max/ghaction-github-pages@v2
-        with:
-          target_branch: gh-pages
-          build_dir: dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Jest coverage report
-        uses: ArtiomTr/jest-coverage-report-action@v2.2.1
-        id: coverage
-        with:
-            output: report-markdown, comment
-      - uses: marocchino/sticky-pull-request-comment@v2
-        with:
-            message: ${{ steps.coverage.outputs.report }}
-            
+
+      - name: Obtener lista de commits
+        id: commits
+        run: |
+          commits=$(git log --pretty=format:'%H' ${{ github.event.before }}..${{ github.sha }})
+          echo "::set-output name=commits::$commits"
+        shell: bash
+
+      - name: Ejecutar acciones en cada commit
+        run: |
+          IFS=$'\n'       # Set the Internal Field Separator to newline
+          for commit in ${{ steps.commits.outputs.commits }}; do
+            echo "Commit: $commit"
+
+            # Aquí colocas los pasos originales de tu flujo de trabajo que deseas ejecutar en cada commit
+            - name: Checkout del código fuente
+              uses: actions/checkout@v2
+              with:
+                ref: $commit
+            - name: Set up node.js
+              uses: actions/setup-node@v1
+              with:
+                node-version: 16
+            - name: Install dependencies
+              run: npm ci
+            - name: Run tests
+              run: npm run test-once
+            - name: Build for deploy
+              run: npm run build
+            - name: Deploy to GitHub Pages
+              if: success()
+              uses: crazy-max/ghaction-github-pages@v2
+              with:
+                target_branch: gh-pages
+                build_dir: dist
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Jest coverage report
+              uses: ArtiomTr/jest-coverage-report-action@v2.2.1
+              id: coverage
+              with:
+                output: report-markdown, comment
+
+          done
