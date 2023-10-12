@@ -51,44 +51,51 @@ name: CI
 on: 
   push:
     # only trigger on branches, not on tags
-    branches: '**'
+    branches:
+      - '**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout del código fuente
+        uses: actions/checkout@v2
         with:
-          # checkout full tree
           fetch-depth: 0
-      - run: |
+
+      - name: Process Commits
+        run: |
           for commit in $(git rev-list ${{ github.event.before}}..${{ github.sha}}); do
-            - name: Checkout del código fuente
-              uses: actions/checkout@v2
-              with:
-                ref: $commit
-            - name: Set up node.js
-              uses: actions/setup-node@v1
-              with:
-                node-version: 16
-            - name: Install dependencies
-              run: npm ci
-            - name: Run tests
-              run: npm run test-once
-            - name: Build for deploy
-              run: npm run build
-            - name: Deploy to GitHub Pages
-              if: success()
-              uses: crazy-max/ghaction-github-pages@v2
-              with:
-                target_branch: gh-pages
-                build_dir: dist
-              env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            - name: Jest coverage report
-              uses: ArtiomTr/jest-coverage-report-action@v2.2.1
-              id: coverage
-              with:
-                output: report-markdown, comment
+            echo "Processing commit: $commit"
+            git checkout $commit
+            
+            # Set up Node.js, install dependencies, run tests, build, and deploy if necessary
+            name: Set up node.js
+            uses: actions/setup-node@v1
+            with:
+              node-version: 16
+              
+            name: Install dependencies
+            run: npm ci
+            
+            name: Run tests
+            run: npm run test-once
+            
+            name: Build for deploy
+            run: npm run build
+            
+            name: Deploy to GitHub Pages
+            if: success()
+            uses: crazy-max/ghaction-github-pages@v2
+            with:
+              target_branch: gh-pages
+              build_dir: dist
+            env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            
+            name: Jest coverage report
+            uses: ArtiomTr/jest-coverage-report-action@v2.2.1
+            with:
+              output: report-markdown, comment
           done
