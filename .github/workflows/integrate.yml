@@ -17,7 +17,15 @@ jobs:
       - run: |
           for commit in $(git rev-list ${{ github.event.before}}..${{ github.sha}}); do
               git checkout $commit
-              echo "run test"
+              echo "run test
+                    - name: Jest coverage report
+            uses: ArtiomTr/jest-coverage-report-action@v2.2.1
+            id: coverage
+            with:
+            output: report-markdown, comment
+            - uses: marocchino/sticky-pull-request-comment@v2
+            with:
+            message: ${{ steps.coverage.outputs.report }}"
           done
       - name: Set up node.js
         uses: actions/setup-node@v1
@@ -44,11 +52,3 @@ jobs:
       #    build_dir: dist
       #  env:
       #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Jest coverage report
-        uses: ArtiomTr/jest-coverage-report-action@v2.2.1
-        id: coverage
-        with:
-            output: report-markdown, comment
-      - uses: marocchino/sticky-pull-request-comment@v2
-        with:
-            message: ${{ steps.coverage.outputs.report }}
