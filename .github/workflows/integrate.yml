@@ -50,9 +50,8 @@ name: CI en todos los commits
 
 on:
   push:
-    branches: [main]
-  pull_request_target:
-    branches: [main, master]
+    branches:
+      - main
 
 jobs:
   build:
@@ -62,20 +61,27 @@ jobs:
       - name: Checkout del código fuente
         uses: actions/checkout@v2
 
-      - name: Obtener lista de commits
-        id: commits
+      - name: Obtener el número de commits en el push
+        id: num_commits
         run: |
-          commits=$(git log --pretty=format:'%H' ${{ github.event.before }}..${{ github.sha }})
-          echo "::set-output name=commits::$commits"
+          num=$(git rev-list ${{ github.event.before }}..${{ github.sha }} --count)
+          echo "::set-output name=num_commits::$num"
         shell: bash
 
       - name: Ejecutar acciones en cada commit
         run: |
-          IFS=$'\n'       # Set the Internal Field Separator to newline
-          for commit in ${{ steps.commits.outputs.commits }}; do
-            echo "Commit: $commit"
+          num_commits=${{ steps.num_commits.outputs.num_commits }}
 
-            # Aquí colocas los pasos originales de tu flujo de trabajo que deseas ejecutar en cada commit
+          if [ $num_commits -gt 1 ]; then
+            commit_range="${{ github.event.before }}..${{ github.sha }}"
+          else
+            commit_range="${{ github.sha }}"
+          fi
+
+          echo "Rango de commits: $commit_range"
+
+          for commit in $(git rev-list $commit_range); do
+            echo "Commit: $commit"
             - name: Checkout del código fuente
               uses: actions/checkout@v2
               with:
@@ -103,5 +109,4 @@ jobs:
               id: coverage
               with:
                 output: report-markdown, comment
-
           done
