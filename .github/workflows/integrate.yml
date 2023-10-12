@@ -68,17 +68,26 @@ jobs:
           for commit in $(git rev-list ${{ github.event.before }}..${{ github.sha }}); do
             echo "Procesando commit: $commit"
             git checkout $commit
-            uses: actions/setup-node@v2
-            with:
-              node-version: 16
-            run: npm ci
-            run: npm run test-once
-            run: npm run build
-            uses: ArtiomTr/jest-coverage-report-action@v2.2.1
-            id: coverage
-            with:
-              output: report-markdown, comment
-            uses: marocchino/sticky-pull-request-comment@v2
-            with:
-              message: ${{ steps.coverage.outputs.report }}
+            npm ci
+            npm run test-once
+            npm run build
           done
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Ejecutar acciones de cobertura y comentario
+        run: |
+          # Acción de cobertura de Jest
+          uses: ArtiomTr/jest-coverage-report-action@v2.2.1
+          id: coverage
+          with:
+            output: report-markdown, comment
+
+          # Acción de comentario persistente en solicitudes de extracción
+          uses: marocchino/sticky-pull-request-comment@v2
+          with:
+            message: ${{ steps.coverage.outputs.report }}
+
