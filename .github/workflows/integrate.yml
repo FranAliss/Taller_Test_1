@@ -48,9 +48,9 @@
           
 name: CI
 
-on: 
+on:
   push:
-    # only trigger on branches, not on tags
+    # Solo activar en ramas, no en etiquetas
     branches:
       - '**'
 
@@ -64,38 +64,29 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Process Commits
+      - name: Procesar commits
         run: |
           for commit in $(git rev-list ${{ github.event.before}}..${{ github.sha}}); do
-            echo "Processing commit: $commit"
+            echo "Procesando commit: $commit"
             git checkout $commit
             
-            # Set up Node.js, install dependencies, run tests, build, and deploy if necessary
-            name: Set up node.js
+            # Configurar Node.js, instalar dependencias, ejecutar pruebas, construir y desplegar si es necesario
+            echo "Configurar Node.js"
             uses: actions/setup-node@v1
             with:
               node-version: 16
               
-            name: Install dependencies
+            echo "Instalar dependencias"
             run: npm ci
             
-            name: Run tests
+            echo "Ejecutar pruebas"
             run: npm run test-once
             
-            name: Build for deploy
+            echo "Construir para despliegue"
             run: npm run build
             
-            name: Deploy to GitHub Pages
-            if: success()
-            uses: crazy-max/ghaction-github-pages@v2
-            with:
-              target_branch: gh-pages
-              build_dir: dist
-            env:
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            
-            name: Jest coverage report
-            uses: ArtiomTr/jest-coverage-report-action@v2.2.1
-            with:
-              output: report-markdown, comment
+            if [[ "$commit" == "<condición>" ]]; then
+              echo "Desplegando commit: $commit"
+              # Tus pasos de despliegue aquí
+            fi
           done
