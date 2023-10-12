@@ -46,8 +46,6 @@
 #         with:
 #             message: ${{ steps.coverage.outputs.report }}
             
-
-
 name: CI en todos los commits
 
 on:
