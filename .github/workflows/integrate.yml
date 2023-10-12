@@ -70,50 +70,25 @@ jobs:
             git checkout $commit
 
             # Configurar Node.js
-            - name: Set up Node.js
-              uses: actions/setup-node@v2
-              with:
-                node-version: 16
+            name: Set up Node.js
+            uses: actions/setup-node@v2
+            with:
+              node-version: 16
 
-            # Instalar dependencias
-            - name: Install dependencies
-              run: npm ci
+            name: Install dependencies
+            run: npm ci
+            name: Run tests
+            run: npm run test-once
+            name: Build for deploy
+            run: npm run build
+            name: Jest coverage report
+            uses: ArtiomTr/jest-coverage-report-action@v2.2.1
+            id: coverage
+            with:
+              output: report-markdown, comment
 
-            # Ejecutar pruebas
-            - name: Run tests
-              run: npm run test-once
-
-            # Construir para despliegue
-            - name: Build for deploy
-              run: npm run build
-
-            # Comprobar si es necesario el despliegue
-            if [[ "$commit" == "<condición>" ]]; then
-              echo "Desplegando commit: $commit"
-              # Tus pasos de despliegue aquí
-            fi
-
-            # Agregar más acciones según sea necesario
-            # Por ejemplo, ejecutar análisis estático, pruebas de seguridad, notificar resultados, etc.
-
-            # Ejemplo: Ejecutar pruebas de seguridad
-            - name: Run security tests
-              run: npm run security-test
-
-            # Ejemplo: Ejecutar análisis estático del código
-            - name: Run static code analysis
-              run: npm run static-analysis
-
-            # Ejemplo: Acción de cobertura de Jest
-            - name: Jest coverage report
-              uses: ArtiomTr/jest-coverage-report-action@v2.2.1
-              id: coverage
-              with:
-                output: report-markdown, comment
-
-            # Ejemplo: Acción de comentario persistente en solicitudes de extracción
-            - name: PR Comment
-              uses: marocchino/sticky-pull-request-comment@v2
-              with:
-                message: ${{ steps.coverage.outputs.report }}
+            name: PR Comment
+            uses: marocchino/sticky-pull-request-comment@v2
+            with:
+              message: ${{ steps.coverage.outputs.report }}
           done
