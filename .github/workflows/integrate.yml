@@ -10,18 +10,20 @@ jobs:
   ci_to_main:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        with:
-          # checkout full tree
-          fetch-depth: 0
       - name: Set up node.js
         uses: actions/setup-node@v1
         with:
           node-version: 16
+      - name: Clear npm cache
+        run: npm cache clean --force
       - name: Install dependencies
         run: npm ci
       - name: Run Unit Tests
         run: npm run test-once
+      - uses: actions/checkout@v2
+        with:
+          # checkout full tree
+          fetch-depth: 0
       - name: Generate Jest coverage and comments
         run: |
           for commit in $(git rev-list ${{ github.event.before }}..${{ github.sha }}); do
