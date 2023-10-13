@@ -7,40 +7,26 @@ on:
     branches: [main, master]
 
 jobs:
-  ci_to_main:
+  run-action-for-each-commit:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Set up node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16
-      - name: Clear npm cache
-        run: npm cache clean --force
-      - name: Install dependencies
-        run: npm install
-      - name: Run Unit Tests
-        run: npm run test-once
-      - uses: actions/checkout@v2
-        with:
-          # checkout full tree
-          fetch-depth: 0
-      - name: Generate Jest coverage and comments
-        run: |
-          for commit in $(git rev-list ${{ github.event.before }}..${{ github.sha }}); do
-            git checkout $commit
-            echo "run test"
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-            # Run Jest coverage report for each commit
-            npx jest --coverage
+    - name: Loop through commits and run action
+      run: |
+        for commit in $(git log --pretty=format:'%H' ${{ github.event.before }}..${{ github.event.after }}); do
+          echo "Running action for commit $commit"
+          Replace this with your action to run for each commit
+          For example:
+          - name: Jest coverage report
+            uses: ArtiomTr/jest-coverage-report-action@v2.2.1
+            with:
+                commit: $commit
+                output: report-markdown, comment
+        done
 
-            # Use the Jest coverage report action for each commit
-            echo "Running Jest coverage report for commit $commit"
-            npx ArtiomTr/jest-coverage-report-action@v2.2.1 --output report-markdown,comment
-
-            # Add a comment for each commit (you can use marocchino/sticky-pull-request-comment)
-            echo "Adding coverage comment for commit $commit"
-            # Use your desired method to add the comment
-          done
 
       #####
       #- name: Run E2E Tests
