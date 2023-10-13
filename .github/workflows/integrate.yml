@@ -16,7 +16,7 @@ jobs:
 
     - name: Loop through commits and run action
       run: |
-        for commit in $(git log --pretty=format:'%H' ${{ github.event.before }}..${{ github.event.after }}); do
+        for commit in $(git log --pretty=format:'%H' ${{ github.event.before }}..${{ github.sha }}); do
           echo "Running action for commit $commit"
           Replace this with your action to run for each commit
           For example:
@@ -26,7 +26,6 @@ jobs:
                 commit: $commit
                 output: report-markdown, comment
         done
-
 
       #####
       #- name: Run E2E Tests
