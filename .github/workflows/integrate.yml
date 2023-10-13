@@ -15,17 +15,14 @@ jobs:
           # checkout full tree
           fetch-depth: 0
       - run: |
-          for commit in $(git rev-list ${{ github.event.before}}..${{ github.sha}}); do
+          for commit in $(git rev-list ${{ github.event.before }}..${{ github.sha }}); do
               git checkout $commit
-              echo "run test
-                    - name: Jest coverage report
-            uses: ArtiomTr/jest-coverage-report-action@v2.2.1
-            id: coverage
-            with:
-            output: report-markdown, comment
-            - uses: marocchino/sticky-pull-request-comment@v2
-            with:
-            message: ${{ steps.coverage.outputs.report }}"
+              echo "run test"
+              # Run Jest coverage report for each commit
+              npx jest --coverage
+              # Add coverage comment for each commit
+              echo "Adding coverage comment for commit $commit"
+              # You can use marocchino/sticky-pull-request-comment here if needed
           done
       - name: Set up node.js
         uses: actions/setup-node@v1
